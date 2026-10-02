@@ -6,6 +6,7 @@
 
 #include "compiler.h"
 #include "dsp.h"
+#include "weights.h"
 
 namespace nam
 {
@@ -53,7 +54,7 @@ public:
 
   /// \brief Set the parameters (weights) of this module
   /// \param weights Iterator to the weights vector. Will be advanced as weights are consumed.
-  void set_weights_(std::vector<float>::iterator& weights) { _cond_to_scale_shift.set_weights_(weights); }
+  void set_weights_(nam::weights_iterator& weights) { _cond_to_scale_shift.set_weights_(weights); }
 
   /// \brief Get the condition dimension
   /// \return Size of the conditioning input

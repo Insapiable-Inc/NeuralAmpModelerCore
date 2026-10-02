@@ -43,7 +43,7 @@ nam::wavenet::detail::Head::Head(const HeadParams& params)
   }
 }
 
-void nam::wavenet::detail::Head::set_weights_(std::vector<float>::iterator& weights)
+void nam::wavenet::detail::Head::set_weights_(nam::weights_iterator& weights)
 {
   for (size_t i = 0; i < _convs.size(); i++)
     _convs[i].set_weights_(weights);
@@ -132,7 +132,7 @@ void nam::wavenet::detail::Layer::SetMaxBufferSize(const int maxBufferSize)
     this->_head1x1_post_film->SetMaxBufferSize(maxBufferSize);
 }
 
-void nam::wavenet::detail::Layer::set_weights_(std::vector<float>::iterator& weights)
+void nam::wavenet::detail::Layer::set_weights_(nam::weights_iterator& weights)
 {
   this->_conv.set_weights_(weights);
   this->_input_mixin.set_weights_(weights);
@@ -522,7 +522,7 @@ const Eigen::MatrixXf& nam::wavenet::detail::LayerArray::GetHeadOutputs() const
 }
 
 
-void nam::wavenet::detail::LayerArray::set_weights_(std::vector<float>::iterator& weights)
+void nam::wavenet::detail::LayerArray::set_weights_(nam::weights_iterator& weights)
 {
   this->_rechannel.set_weights_(weights);
   for (size_t i = 0; i < this->_layers.size(); i++)
@@ -622,7 +622,7 @@ nam::wavenet::WaveNet::WaveNet(const int in_channels,
 
 void nam::wavenet::WaveNet::set_weights_(std::vector<float>& weights)
 {
-  std::vector<float>::iterator it = weights.begin();
+  nam::weights_iterator it(weights);
   // Note: condition_dsp already has its own weights from construction,
   // so we don't need to set its weights here.
   for (size_t i = 0; i < this->_layer_arrays.size(); i++)
@@ -630,18 +630,7 @@ void nam::wavenet::WaveNet::set_weights_(std::vector<float>& weights)
   if (this->_post_stack_head != nullptr)
     this->_post_stack_head->set_weights_(it);
   this->_head_scale = *(it++); // TODO `LayerArray.absorb_head_scale()`
-  if (it != weights.end())
-  {
-    std::stringstream ss;
-    for (size_t i = 0; i < weights.size(); i++)
-      if (weights[i] == *it)
-      {
-        ss << "Weight mismatch: assigned " << i + 1 << " weights, but " << weights.size() << " were provided.";
-        throw std::runtime_error(ss.str().c_str());
-      }
-    ss << "Weight mismatch: provided " << weights.size() << " weights, but the model expects more.";
-    throw std::runtime_error(ss.str().c_str());
-  }
+  it.expect_end("WaveNet");
 }
 
 void nam::wavenet::WaveNet::SetMaxBufferSize(const int maxBufferSize)

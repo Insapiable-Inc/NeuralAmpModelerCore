@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <memory>
@@ -6,7 +7,7 @@
 #include "registry.h"
 #include "lstm.h"
 
-nam::lstm::LSTMCell::LSTMCell(const int input_size, const int hidden_size, std::vector<float>::iterator& weights)
+nam::lstm::LSTMCell::LSTMCell(const int input_size, const int hidden_size, nam::weights_iterator& weights)
 {
   // Resize arrays
   this->_w.resize(4 * hidden_size, input_size + hidden_size);
@@ -67,15 +68,46 @@ void nam::lstm::LSTMCell::process_(const Eigen::Ref<const Eigen::VectorXf>& x)
   }
 }
 
+// Validates the architecture against the weights before anything is allocated:
+// process() copies one input per channel into a vector of input_size, so the two must
+// agree, and the weight count must match exactly. Sizes are bounded first so the count
+// can't overflow.
+static void validate_lstm(const int in_channels, const int out_channels, const int num_layers, const int input_size,
+                          const int hidden_size, const size_t num_weights)
+{
+  constexpr long long max_dim = 1 << 16;
+  auto in_range = [](long long v, long long hi) { return v >= 1 && v <= hi; };
+  // num_layers may be 0: a head-only model is a supported edge case.
+  if (!in_range(in_channels, max_dim) || !in_range(out_channels, max_dim) || num_layers < 0 || num_layers > 1024
+      || !in_range(input_size, max_dim) || !in_range(hidden_size, max_dim))
+    throw std::runtime_error("LSTM model has invalid dimensions.");
+  if (input_size != in_channels)
+    throw std::runtime_error("LSTM model is inconsistent: input_size " + std::to_string(input_size) + " doesn't match "
+                             + std::to_string(in_channels) + " input channel(s).");
+  long long expected = 0;
+  for (int i = 0; i < num_layers; i++)
+  {
+    const long long in = i == 0 ? input_size : hidden_size;
+    const long long h = hidden_size;
+    expected += 4 * h * (in + h) + 4 * h + h + h; // W, b, initial hidden, initial cell
+  }
+  expected += (long long)out_channels * hidden_size + out_channels; // head weight + bias
+  if (expected != (long long)num_weights)
+    throw std::runtime_error("Weight mismatch in LSTM: the file has " + std::to_string(num_weights)
+                             + " weights, the architecture needs " + std::to_string(expected) + ".");
+}
+
 nam::lstm::LSTM::LSTM(const int in_channels, const int out_channels, const int num_layers, const int input_size,
                       const int hidden_size, std::vector<float>& weights, const double expected_sample_rate)
 : DSP(in_channels, out_channels, expected_sample_rate)
 {
+  validate_lstm(in_channels, out_channels, num_layers, input_size, hidden_size, weights.size());
+
   // Allocate input and output vectors
   this->_input.resize(input_size);
   this->_output.resize(out_channels);
 
-  std::vector<float>::iterator it = weights.begin();
+  nam::weights_iterator it(weights);
   for (int i = 0; i < num_layers; i++)
     this->_layers.push_back(LSTMCell(i == 0 ? input_size : hidden_size, hidden_size, it));
 
@@ -97,7 +129,7 @@ nam::lstm::LSTM::LSTM(const int in_channels, const int out_channels, const int n
     this->_head_bias(out_ch) = *(it++);
   }
 
-  assert(it == weights.end());
+  it.expect_end("LSTM");
 }
 
 void nam::lstm::LSTM::process(NAM_SAMPLE** input, NAM_SAMPLE** output, const int num_frames)

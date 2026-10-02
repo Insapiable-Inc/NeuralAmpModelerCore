@@ -317,15 +317,19 @@ public:
     {
       weights.push_back(0.02f * i);
     }
+    // Biases (conv: 2 * bottleneck for gated, 1x1: channels) as zeros. The list above
+    // used to stop here and the layers read past the end of the vector; the checked
+    // weights_iterator now throws on that.
+    weights.insert(weights.end(), 2 * bottleneck + channels, 0.0f);
 
     // Set weights for all layers
-    auto weights_iter = weights.begin();
+    nam::weights_iterator weights_iter(weights);
     layer_sigmoid.set_weights_(weights_iter);
 
-    weights_iter = weights.begin();
+    weights_iter = nam::weights_iterator(weights);
     layer_tanh.set_weights_(weights_iter);
 
-    weights_iter = weights.begin();
+    weights_iter = nam::weights_iterator(weights);
     layer_relu.set_weights_(weights_iter);
 
     // Create some test input data

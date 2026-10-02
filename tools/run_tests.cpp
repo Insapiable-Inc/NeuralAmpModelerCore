@@ -245,6 +245,8 @@ int main()
   test_lstm::test_lstm_different_input_size();
   test_lstm::test_lstm_state_evolution();
   test_lstm::test_lstm_no_layers();
+  test_lstm::test_lstm_truncated_weights_throw();
+  test_lstm::test_lstm_input_size_mismatch_throws();
 
   // LSTM real-time safety tests (issue #218)
   test_lstm_realtime_safe::test_lstm_process_single_layer_realtime_safe();

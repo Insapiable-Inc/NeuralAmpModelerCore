@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 
 #include "NAM/lstm.h"
@@ -446,6 +447,42 @@ void test_lstm_no_layers()
   {
     assert(std::isfinite(output[i]));
   }
+}
+
+// A weight vector shorter than the architecture needs is a load error, not an
+// out-of-bounds read (it used to be read through an unchecked iterator).
+void test_lstm_truncated_weights_throw()
+{
+  std::vector<float> weights{0.5f};
+  bool threw = false;
+  try
+  {
+    nam::lstm::LSTM lstm(1, 1, 1, 1, 1, weights, 48000.0);
+  }
+  catch (const std::runtime_error&)
+  {
+    threw = true;
+  }
+  assert(threw);
+}
+
+// input_size must equal the number of input channels: process() writes one value per
+// channel into a vector of input_size.
+void test_lstm_input_size_mismatch_throws()
+{
+  const int hidden_size = 2;
+  // Weights for in_channels = 1, input_size = 2 (a consistent count for input_size 2).
+  std::vector<float> weights(4 * hidden_size * (2 + hidden_size) + 6 * hidden_size + hidden_size + 1, 0.0f);
+  bool threw = false;
+  try
+  {
+    nam::lstm::LSTM lstm(1, 1, 1, 2, hidden_size, weights, 48000.0);
+  }
+  catch (const std::runtime_error&)
+  {
+    threw = true;
+  }
+  assert(threw);
 }
 
 }; // namespace test_lstm

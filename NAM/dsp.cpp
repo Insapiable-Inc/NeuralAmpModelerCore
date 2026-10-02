@@ -360,7 +360,7 @@ void nam::Conv1x1::SetMaxBufferSize(const int maxBufferSize)
   _output.resize(get_out_channels(), maxBufferSize);
 }
 
-void nam::Conv1x1::set_weights_(std::vector<float>::iterator& weights)
+void nam::Conv1x1::set_weights_(nam::weights_iterator& weights)
 {
   if (this->_is_depthwise)
   {

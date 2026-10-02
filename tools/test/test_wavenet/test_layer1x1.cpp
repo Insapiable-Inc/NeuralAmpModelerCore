@@ -74,9 +74,9 @@ void test_layer1x1_active()
     0.0f, 0.0f // bias
   };
 
-  auto it = weights.begin();
+  nam::weights_iterator it(weights);
   layer.set_weights_(it);
-  assert(it == weights.end());
+  assert(it.at_end());
 
   const int numFrames = 2;
   layer.SetMaxBufferSize(numFrames);
@@ -139,9 +139,9 @@ void test_layer1x1_inactive()
     // No layer1x1 weights since it's inactive
   };
 
-  auto it = weights.begin();
+  nam::weights_iterator it(weights);
   layer.set_weights_(it);
-  assert(it == weights.end());
+  assert(it.at_end());
 
   const int numFrames = 2;
   layer.SetMaxBufferSize(numFrames);
@@ -259,9 +259,9 @@ void test_layer1x1_post_film_active()
     0.0f, 0.0f, 0.0f, 0.0f // bias
   };
 
-  auto it = weights.begin();
+  nam::weights_iterator it(weights);
   layer.set_weights_(it);
-  assert(it == weights.end());
+  assert(it.at_end());
 
   const int numFrames = 2;
   layer.SetMaxBufferSize(numFrames);
@@ -379,9 +379,9 @@ void test_layer1x1_gated()
   weights.push_back(0.0f);
   weights.push_back(0.0f);
 
-  auto it = weights.begin();
+  nam::weights_iterator it(weights);
   layer.set_weights_(it);
-  assert(it == weights.end());
+  assert(it.at_end());
 
   const int numFrames = 2;
   layer.SetMaxBufferSize(numFrames);
@@ -450,9 +450,9 @@ void test_layer1x1_groups()
     // Group 2: (2,2) weights + 2 bias
     1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
 
-  auto it = weights.begin();
+  nam::weights_iterator it(weights);
   layer.set_weights_(it);
-  assert(it == weights.end());
+  assert(it.at_end());
 
   const int numFrames = 2;
   layer.SetMaxBufferSize(numFrames);

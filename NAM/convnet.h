@@ -13,6 +13,7 @@
 #include "conv1d.h"
 #include "dsp.h"
 #include "json.hpp"
+#include "weights.h"
 
 namespace nam
 {
@@ -32,7 +33,7 @@ public:
   /// \brief Constructor with weights
   /// \param dim Dimension of the input
   /// \param weights Iterator to the weights vector. Will be advanced as weights are consumed.
-  BatchNorm(const int dim, std::vector<float>::iterator& weights);
+  BatchNorm(const int dim, nam::weights_iterator& weights);
 
   /// \brief Process input in-place
   /// \param input Input matrix to process
@@ -69,7 +70,7 @@ public:
   /// \param weights Iterator to the weights vector. Will be advanced as weights are consumed.
   void set_weights_(const int in_channels, const int out_channels, const int _dilation, const bool batchnorm,
                     const activations::ActivationConfig& activation_config, const int groups,
-                    std::vector<float>::iterator& weights);
+                    nam::weights_iterator& weights);
 
   /// \brief Resize buffers to handle maxBufferSize frames
   /// \param maxBufferSize Maximum number of frames to process in a single call
@@ -109,7 +110,7 @@ class _Head
 {
 public:
   _Head() {};
-  _Head(const int in_channels, const int out_channels, std::vector<float>::iterator& weights);
+  _Head(const int in_channels, const int out_channels, nam::weights_iterator& weights);
   void process_(const Eigen::MatrixXf& input, Eigen::MatrixXf& output, const long i_start, const long i_end) const;
 
 private:

@@ -14,6 +14,7 @@
 #include "compiler.h"
 #include "json.hpp"
 #include "model_config.h"
+#include "weights.h"
 
 #ifdef NAM_SAMPLE_FLOAT
   #define NAM_SAMPLE float
@@ -298,7 +299,7 @@ public:
 
   /// \brief Set the parameters (weights) of this module
   /// \param weights Iterator to the weights vector. Will be advanced as weights are consumed.
-  void set_weights_(std::vector<float>::iterator& weights);
+  void set_weights_(nam::weights_iterator& weights);
 
   /// \brief Process input and return output matrix
   ///

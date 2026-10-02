@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <vector>
 #include "ring_buffer.h"
+#include "weights.h"
 
 namespace nam
 {
@@ -38,7 +39,7 @@ public:
 
   /// \brief Set the parameters (weights) of this module
   /// \param weights Iterator to the weights vector. Will be advanced as weights are consumed.
-  void set_weights_(std::vector<float>::iterator& weights);
+  void set_weights_(nam::weights_iterator& weights);
 
   /// \brief Set the size parameters of the convolution
   /// \param in_channels Number of input channels
@@ -59,7 +60,7 @@ public:
   /// \param groups Number of groups for grouped convolution
   /// \param weights Iterator to the weights vector. Will be advanced as weights are consumed.
   void set_size_and_weights_(const int in_channels, const int out_channels, const int kernel_size, const int _dilation,
-                             const bool do_bias, const int groups, std::vector<float>::iterator& weights);
+                             const bool do_bias, const int groups, nam::weights_iterator& weights);
 
   /// \brief Reset the ring buffer and pre-allocate output buffer
   /// \param maxBufferSize Maximum buffer size for output buffer and to size ring buffer

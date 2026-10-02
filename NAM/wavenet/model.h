@@ -13,6 +13,7 @@
 #include "json.hpp"
 
 #include "detail.h"
+#include "../weights.h"
 
 namespace nam
 {
@@ -66,7 +67,7 @@ public:
 
   /// \brief Set model weights from an iterator
   /// \param weights Iterator to the weights vector. Will be advanced as weights are consumed.
-  void set_weights_(std::vector<float>::iterator& weights);
+  void set_weights_(nam::weights_iterator& weights);
 
   int GetPrewarmSamples() override { return mPrewarmSamples; };
 

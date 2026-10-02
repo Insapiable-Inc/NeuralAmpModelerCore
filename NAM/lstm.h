@@ -8,6 +8,7 @@
 #include <Eigen/Dense>
 
 #include "dsp.h"
+#include "weights.h"
 
 namespace nam
 {
@@ -21,7 +22,7 @@ public:
   /// \param input_size Size of the input vector
   /// \param hidden_size Size of the hidden state
   /// \param weights Iterator to the weights vector. Will be advanced as weights are consumed.
-  LSTMCell(const int input_size, const int hidden_size, std::vector<float>::iterator& weights);
+  LSTMCell(const int input_size, const int hidden_size, nam::weights_iterator& weights);
 
   /// \brief Get the current hidden state
   /// \return A non-owning view of the hidden state (the tail of the concatenated input/hidden vector).

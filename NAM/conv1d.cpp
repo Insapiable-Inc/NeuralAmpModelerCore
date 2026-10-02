@@ -7,7 +7,7 @@ namespace nam
 {
 // Conv1D =====================================================================
 
-void Conv1D::set_weights_(std::vector<float>::iterator& weights)
+void Conv1D::set_weights_(nam::weights_iterator& weights)
 {
   if (this->_is_depthwise)
   {
@@ -113,7 +113,7 @@ void Conv1D::set_size_(const int in_channels, const int out_channels, const int 
 
 void Conv1D::set_size_and_weights_(const int in_channels, const int out_channels, const int kernel_size,
                                    const int _dilation, const bool do_bias, const int groups,
-                                   std::vector<float>::iterator& weights)
+                                   nam::weights_iterator& weights)
 {
   this->set_size_(in_channels, out_channels, kernel_size, do_bias, _dilation, groups);
   this->set_weights_(weights);

@@ -11,7 +11,7 @@
 #include "registry.h"
 #include "convnet.h"
 
-nam::convnet::BatchNorm::BatchNorm(const int dim, std::vector<float>::iterator& weights)
+nam::convnet::BatchNorm::BatchNorm(const int dim, nam::weights_iterator& weights)
 {
   // Extract from param buffer
   Eigen::VectorXf running_mean(dim);
@@ -50,7 +50,7 @@ void nam::convnet::BatchNorm::process_(Eigen::MatrixXf& x, const long i_start, c
 void nam::convnet::ConvNetBlock::set_weights_(const int in_channels, const int out_channels, const int _dilation,
                                               const bool batchnorm,
                                               const activations::ActivationConfig& activation_config, const int groups,
-                                              std::vector<float>::iterator& weights)
+                                              nam::weights_iterator& weights)
 {
   this->_batchnorm = batchnorm;
   // HACK 2 kernel
@@ -130,7 +130,7 @@ long nam::convnet::ConvNetBlock::get_out_channels() const
   return this->conv.get_out_channels();
 }
 
-nam::convnet::_Head::_Head(const int in_channels, const int out_channels, std::vector<float>::iterator& weights)
+nam::convnet::_Head::_Head(const int in_channels, const int out_channels, nam::weights_iterator& weights)
 {
   // Weights are stored row-major: first row (output 0), then row 1 (output 1), etc.
   // For each output channel: [w0, w1, ..., w_{in_channels-1}]
@@ -181,7 +181,7 @@ nam::convnet::ConvNet::ConvNet(const int in_channels, const int out_channels, co
 {
   this->_verify_weights(channels, dilations, batchnorm, weights.size());
   this->_blocks.resize(dilations.size());
-  std::vector<float>::iterator it = weights.begin();
+  nam::weights_iterator it(weights);
   // First block takes in_channels input, subsequent blocks take channels input
   for (size_t i = 0; i < dilations.size(); i++)
     this->_blocks[i].set_weights_(
@@ -194,8 +194,7 @@ nam::convnet::ConvNet::ConvNet(const int in_channels, const int out_channels, co
   // Create single head that outputs all channels
   this->_head = _Head(channels, out_channels, it);
 
-  if (it != weights.end())
-    throw std::runtime_error("Didn't touch all the weights when initializing ConvNet");
+  it.expect_end("ConvNet");
 
   mPrewarmSamples = 1;
   for (size_t i = 0; i < dilations.size(); i++)
